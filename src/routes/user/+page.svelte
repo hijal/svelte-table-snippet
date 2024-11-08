@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 	import Table from '$lib/Table.svelte';
 	import type { PaginationParams, User } from '../../types';
-	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
