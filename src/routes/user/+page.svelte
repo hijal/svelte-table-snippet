@@ -15,7 +15,7 @@
 	let firstId = $derived(users.length > 0 ? users[0].id : undefined);
 	let lastId = $derived(users.length > 0 ? users[users.length - 1].id : undefined);
 
-	let page = $state.raw(1);
+	let page = $state(1);
 
 	async function updateUrlParams(params: Partial<PaginationParams>) {
 		const url = new URL(window.location.href);
