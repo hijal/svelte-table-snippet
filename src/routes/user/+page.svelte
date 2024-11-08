@@ -2,7 +2,8 @@
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 	import Table from '$lib/Table.svelte';
-	import type { User } from '../../types';
+	import type { PaginationParams, User } from '../../types';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
@@ -11,7 +12,24 @@
 	const { data }: Props = $props();
 	const users = $derived(data.users);
 
+	let firstId = $derived(users.length > 0 ? users[0].id : undefined);
+	let lastId = $derived(users.length > 0 ? users[users.length - 1].id : undefined);
+
 	let page = $state.raw(1);
+
+	async function updateUrlParams(params: Partial<PaginationParams>) {
+		const url = new URL(window.location.href);
+		const currentParams = new URLSearchParams();
+
+		Object.entries(params).forEach(([key, value]) => {
+			if (value !== undefined) {
+				currentParams.set(key, value.toString());
+			}
+		});
+
+		url.search = currentParams.toString();
+		await goto(url.toString(), { replaceState: true });
+	}
 
 	function handleNextPage() {
 		page += 1;
@@ -19,6 +37,16 @@
 	function handlePrevPage() {
 		page -= 1;
 	}
+
+	$effect(() => {
+		if (page <= 1) {
+			goto(window.location.pathname, { replaceState: true });
+		} else {
+			updateUrlParams({
+				page
+			});
+		}
+	});
 </script>
 
 <div class="space-y-10 p-6">
@@ -31,6 +59,11 @@
 			<ArrowLeft class="mr-2" strokeWidth={1.5} size={17} />
 			Back
 		</button>
+	</div>
+
+	<div class="join flex flex-col flex-wrap">
+		<p class="join-item">Ending before: <span class="font-medium text-success">{firstId}</span></p>
+		<p class="join-item">Starting after: <span class="font-medium text-success">{lastId}</span></p>
 	</div>
 
 	<Table data={users} onNext={handleNextPage} onPrev={handlePrevPage} {page}>
