@@ -29,7 +29,7 @@ export interface User {
 export interface PaginationParams {
 	limit?: number;
 	starting_after?: number;
-	ending_after?: number;
+	ending_before?: number;
 	page?: number;
 }
 

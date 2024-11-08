@@ -1,25 +1,59 @@
 <script lang="ts">
-	import { ArrowLeft, ArrowRight } from 'lucide-svelte';
+	import { goto } from '$app/navigation';
 	import type { Snippet } from 'svelte';
+	import { ArrowLeft, ArrowRight } from 'lucide-svelte';
+	import type { PaginationParams } from '../../types';
 
 	interface Props {
-		page: number;
 		data: any[];
 		header: Snippet;
 		row: Snippet<[any]>;
-		onNext: () => void;
-		onPrev: () => void;
+		starting_after?: number;
+		ending_before?: number;
 	}
 
-	let { page = $bindable(), header, row, data, onNext, onPrev }: Props = $props();
+	const {
+		header,
+		row,
+		data,
+		starting_after = $bindable(),
+		ending_before = $bindable()
+	}: Props = $props();
+	let page = $state(1);
+
+	async function updateUrlParams(params: Partial<PaginationParams>) {
+		const url = new URL(window.location.href);
+		const currentParams = new URLSearchParams();
+
+		Object.entries(params).forEach(([key, value]) => {
+			if (value !== undefined) {
+				currentParams.set(key, value.toString());
+			}
+		});
+
+		url.search = currentParams.toString();
+		await goto(url.toString(), { replaceState: true });
+	}
 
 	function handleNextPage() {
-		onNext();
+		page += 1;
 	}
 
 	function handlePrevPage() {
-		onPrev();
+		page -= 1;
 	}
+
+	$effect(() => {
+		if (page <= 1) {
+			goto(window.location.pathname, { replaceState: true });
+		} else {
+			updateUrlParams({
+				page,
+				starting_after,
+				ending_before
+			});
+		}
+	});
 </script>
 
 <div class="overflow-x-auto">

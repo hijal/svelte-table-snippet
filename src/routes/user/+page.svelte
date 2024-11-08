@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 	import Table from '$lib/components/Table.svelte';
-	import type { PaginationParams, User } from '../../types';
+	import type { User } from '../../types';
 
 	interface Props {
 		data: PageData;
@@ -12,41 +11,8 @@
 	const { data }: Props = $props();
 	const users = $derived(data.users);
 
-	let firstId = $derived(users.length > 0 ? users[0].id : undefined);
-	let lastId = $derived(users.length > 0 ? users[users.length - 1].id : undefined);
-
-	let page = $state(1);
-
-	async function updateUrlParams(params: Partial<PaginationParams>) {
-		const url = new URL(window.location.href);
-		const currentParams = new URLSearchParams();
-
-		Object.entries(params).forEach(([key, value]) => {
-			if (value !== undefined) {
-				currentParams.set(key, value.toString());
-			}
-		});
-
-		url.search = currentParams.toString();
-		await goto(url.toString(), { replaceState: true });
-	}
-
-	function handleNextPage() {
-		page += 1;
-	}
-	function handlePrevPage() {
-		page -= 1;
-	}
-
-	$effect(() => {
-		if (page <= 1) {
-			goto(window.location.pathname, { replaceState: true });
-		} else {
-			updateUrlParams({
-				page
-			});
-		}
-	});
+	let ending_before = $derived(users.length > 0 ? users[0].id : undefined);
+	let starting_after = $derived(users.length > 0 ? users[users.length - 1].id : undefined);
 </script>
 
 <div class="space-y-10 p-6">
@@ -62,11 +28,15 @@
 	</div>
 
 	<div class="join flex flex-col flex-wrap">
-		<p class="join-item">Ending before: <span class="font-medium text-success">{firstId}</span></p>
-		<p class="join-item">Starting after: <span class="font-medium text-success">{lastId}</span></p>
+		<p class="join-item">
+			Ending before: <span class="font-medium text-success">{ending_before}</span>
+		</p>
+		<p class="join-item">
+			Starting after: <span class="font-medium text-success">{starting_after}</span>
+		</p>
 	</div>
 
-	<Table data={users} onNext={handleNextPage} onPrev={handlePrevPage} {page}>
+	<Table data={users} {ending_before} {starting_after}>
 		{#snippet header()}
 			<th class="p-4">ID</th>
 			<th class="p-4">Email</th>

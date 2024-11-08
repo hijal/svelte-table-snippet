@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 	import Table from '$lib/components/Table.svelte';
-	import type { PaginationParams, Product } from '../../types';
+	import type { Product } from '../../types';
 
 	interface Props {
 		data: PageData;
@@ -12,41 +11,8 @@
 	const { data }: Props = $props();
 	const products = $derived(data.products);
 
-	let firstId = $derived(products.length > 0 ? products[0].id : undefined);
-	let lastId = $derived(products.length > 0 ? products[products.length - 1].id : undefined);
-
-	let page = $state(1);
-
-	async function updateUrlParams(params: Partial<PaginationParams>) {
-		const url = new URL(window.location.href);
-		const currentParams = new URLSearchParams();
-
-		Object.entries(params).forEach(([key, value]) => {
-			if (value !== undefined) {
-				currentParams.set(key, value.toString());
-			}
-		});
-
-		url.search = currentParams.toString();
-		await goto(url.toString(), { replaceState: true });
-	}
-
-	function handleNextPage() {
-		page += 1;
-	}
-	function handlePrevPage() {
-		page -= 1;
-	}
-
-	$effect(() => {
-		if (page <= 1) {
-			goto(window.location.pathname, { replaceState: true });
-		} else {
-			updateUrlParams({
-				page
-			});
-		}
-	});
+	let ending_before = $derived(products.length > 0 ? products[0].id : undefined);
+	let starting_after = $derived(products.length > 0 ? products[products.length - 1].id : undefined);
 </script>
 
 <div class="space-y-10 p-6">
@@ -62,11 +28,15 @@
 	</div>
 
 	<div class="join flex flex-col flex-wrap">
-		<p class="join-item">Ending before: <span class="font-medium text-success">{firstId}</span></p>
-		<p class="join-item">Starting after: <span class="font-medium text-success">{lastId}</span></p>
+		<p class="join-item">
+			Ending before: <span class="font-medium text-success">{ending_before}</span>
+		</p>
+		<p class="join-item">
+			Starting after: <span class="font-medium text-success">{starting_after}</span>
+		</p>
 	</div>
 
-	<Table data={products} onNext={handleNextPage} onPrev={handlePrevPage} {page}>
+	<Table data={products} {ending_before} {starting_after}>
 		{#snippet header()}
 			<th class="p-4">ID</th>
 			<th class="p-4">Title</th>
