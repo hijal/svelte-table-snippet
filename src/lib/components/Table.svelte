@@ -8,22 +8,28 @@
 		data: any[];
 		header: Snippet;
 		row: Snippet<[any]>;
-		starting_after?: number;
-		ending_before?: number;
+		params?: Partial<PaginationParams>;
+		onPrev: () => void;
+		onNext: () => void;
 	}
 
-	const {
-		header,
-		row,
-		data,
-		starting_after = $bindable(),
-		ending_before = $bindable()
-	}: Props = $props();
 	let page = $state(1);
+	let isNext = $state(false);
+	let isPrev = $state(false);
+
+	const { header, row, data, params, onPrev, onNext }: Props = $props();
 
 	async function updateUrlParams(params: Partial<PaginationParams>) {
 		const url = new URL(window.location.href);
 		const currentParams = new URLSearchParams();
+
+		if (isNext) {
+			params.ending_before = undefined;
+		}
+
+		if (isPrev) {
+			params.starting_after = undefined;
+		}
 
 		Object.entries(params).forEach(([key, value]) => {
 			if (value !== undefined) {
@@ -37,10 +43,16 @@
 
 	function handleNextPage() {
 		page += 1;
+		isNext = true;
+		isPrev = false;
+		onNext();
 	}
 
 	function handlePrevPage() {
 		page -= 1;
+		isNext = false;
+		isPrev = true;
+		onPrev();
 	}
 
 	$effect(() => {
@@ -49,8 +61,7 @@
 		} else {
 			updateUrlParams({
 				page,
-				starting_after,
-				ending_before
+				...params
 			});
 		}
 	});

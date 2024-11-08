@@ -2,7 +2,7 @@
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 	import Table from '$lib/components/Table.svelte';
-	import type { User } from '../../types';
+	import type { PaginationParams, User } from '../../types';
 
 	interface Props {
 		data: PageData;
@@ -11,8 +11,20 @@
 	const { data }: Props = $props();
 	const users = $derived(data.users);
 
-	let ending_before = $derived(users.length > 0 ? users[0].id : undefined);
-	let starting_after = $derived(users.length > 0 ? users[users.length - 1].id : undefined);
+	const ending_before = $derived(users.length > 0 ? users[0].id : undefined);
+	const starting_after = $derived(users.length > 0 ? users[users.length - 1].id : undefined);
+
+	const params: PaginationParams = $derived({
+		ending_before,
+		starting_after
+	});
+
+	function handleNextPage() {
+		// TODO: handle next page
+	}
+	function handlePrevPage() {
+		// TODO: handle prev page
+	}
 </script>
 
 <div class="space-y-10 p-6">
@@ -36,7 +48,7 @@
 		</p>
 	</div>
 
-	<Table data={users} {ending_before} {starting_after}>
+	<Table data={users} {params} onNext={handleNextPage} onPrev={handlePrevPage}>
 		{#snippet header()}
 			<th class="p-4">ID</th>
 			<th class="p-4">Email</th>
