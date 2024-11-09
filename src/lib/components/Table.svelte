@@ -4,10 +4,10 @@
 	import { ArrowLeft, ArrowRight } from 'lucide-svelte';
 	import type { PaginationParams } from '../../types';
 
-	interface Props {
-		data: any[];
+	interface Props<T> {
+		data: T[];
 		header: Snippet;
-		row: Snippet<[any]>;
+		row: Snippet<[T]>;
 		params?: Partial<PaginationParams>;
 		onPrev: () => void;
 		onNext: () => void;
@@ -17,7 +17,7 @@
 	let isNext = $state(false);
 	let isPrev = $state(false);
 
-	const { header, row, data, params, onPrev, onNext }: Props = $props();
+	const { header, row, data, params, onPrev, onNext }: Props<any> = $props();
 
 	async function updateUrlParams(params: Partial<PaginationParams>) {
 		const url = new URL(window.location.href);
