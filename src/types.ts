@@ -35,9 +35,9 @@ export interface PaginationParams {
 }
 
 export interface PaginationState {
-	page: number;
-	isNext: boolean;
-	isPrev: boolean;
+	currentPage: number;
+	isNextPage: boolean;
+	isPreviousPage: boolean;
 }
 
 export type Direction = 'next' | 'prev';

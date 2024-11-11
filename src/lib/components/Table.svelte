@@ -23,7 +23,7 @@
 	}: Props<T> = $props();
 
 	const paginationState = $state<PaginationState>({
-		currentPage: +paginationParams?.page || 1,
+		currentPage: +(paginationParams?.page || 1),
 		isNextPage: false,
 		isPreviousPage: false
 	});
@@ -104,7 +104,7 @@
 
 <div class="pagination-controls join flex items-center justify-end">
 	<div class="pagination-info flex items-center gap-2">
-		<span>Page {paginationState.currentPage}</span>
+		<span>Page {paginationState?.currentPage}</span>
 		<div class="pagination-buttons join flex items-center gap-2">
 			<button
 				type="button"
