@@ -2,7 +2,7 @@
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 	import Table from '$lib/components/Table.svelte';
-	import type { PaginationParams, User } from '../../types';
+	import type { PaginationParams } from '../../types';
 
 	interface Props {
 		data: PageData;
