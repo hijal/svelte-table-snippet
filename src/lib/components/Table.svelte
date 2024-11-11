@@ -9,11 +9,11 @@
 		header: Snippet;
 		row: Snippet<[T]>;
 		params?: Partial<PaginationParams>;
-		onPrev: () => void;
-		onNext: () => void;
+		onPrev: () => Promise<void> | void;
+		onNext: () => Promise<void> | void;
 	}
 
-	let page = $state(1);
+	let page = $state(+params?.page || 1);
 	let isNext = $state(false);
 	let isPrev = $state(false);
 
@@ -41,18 +41,18 @@
 		await goto(url.toString(), { replaceState: true });
 	}
 
-	function handleNextPage() {
+	async function handleNextPage() {
 		page += 1;
 		isNext = true;
 		isPrev = false;
-		onNext();
+		await onNext();
 	}
 
-	function handlePrevPage() {
+	async function handlePrevPage() {
 		page -= 1;
 		isNext = false;
 		isPrev = true;
-		onPrev();
+		await onPrev();
 	}
 
 	$effect(() => {
@@ -65,7 +65,17 @@
 			});
 		}
 	});
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'ArrowRight' && page < 5) {
+			handleNextPage();
+		} else if (e.key === 'ArrowLeft' && page > 1) {
+			handlePrevPage();
+		}
+	}
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <div class="overflow-x-auto">
 	<table class="table table-zebra">
