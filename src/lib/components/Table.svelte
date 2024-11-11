@@ -1,10 +1,15 @@
+<script lang="ts" module>
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	type T = Record<string, any>;
+</script>
+
 <script lang="ts" generics="T extends Record<string, any>">
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { ArrowLeft, ArrowRight } from 'lucide-svelte';
 	import type { Direction, PaginationParams, PaginationState } from '../../types';
 
-	interface Props<T> {
+	interface Props {
 		tableData: T[];
 		tableHeader: Snippet;
 		tableRow: Snippet<[T]>;
@@ -13,14 +18,8 @@
 		onNextPage: () => Promise<void> | void;
 	}
 
-	const {
-		tableData,
-		tableHeader,
-		tableRow,
-		paginationParams,
-		onPreviousPage,
-		onNextPage
-	}: Props<T> = $props();
+	const { tableData, tableHeader, tableRow, paginationParams, onPreviousPage, onNextPage }: Props =
+		$props();
 
 	const paginationState = $state<PaginationState>({
 		currentPage: +(paginationParams?.page || 1),
