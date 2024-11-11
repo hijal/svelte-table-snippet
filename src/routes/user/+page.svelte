@@ -65,7 +65,7 @@
 			<th class="p-4">Phone</th>
 		{/snippet}
 
-		{#snippet row(user: User)}
+		{#snippet row(user)}
 			<td class="p-4">{user.id}</td>
 			<td class="p-4">{user.email}</td>
 			<td class="p-4">{user.username}</td>

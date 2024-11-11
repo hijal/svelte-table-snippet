@@ -64,7 +64,7 @@
 			<th class="p-4">Discount</th>
 		{/snippet}
 
-		{#snippet row(product: Product)}
+		{#snippet row(product)}
 			<td class="p-4">{product.id}</td>
 			<td class="p-4">{product.title}</td>
 			<td class="p-4"

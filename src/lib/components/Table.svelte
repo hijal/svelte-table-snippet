@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T extends Record<string, any>">
 	import { goto } from '$app/navigation';
 	import type { Snippet } from 'svelte';
 	import { ArrowLeft, ArrowRight } from 'lucide-svelte';
@@ -17,7 +17,7 @@
 	let isNext = $state(false);
 	let isPrev = $state(false);
 
-	const { header, row, data, params, onPrev, onNext }: Props<any> = $props();
+	const { header, row, data, params, onPrev, onNext }: Props<T> = $props();
 
 	async function updateUrlParams(params: Partial<PaginationParams>) {
 		const url = new URL(window.location.href);
