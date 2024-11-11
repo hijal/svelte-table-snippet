@@ -20,10 +20,10 @@
 	});
 
 	function handleNextPage() {
-		// TODO: handle next page
+		console.log('next page');
 	}
 	function handlePrevPage() {
-		// TODO: handle prev page
+		console.log('prev page');
 	}
 </script>
 
@@ -48,8 +48,13 @@
 		</p>
 	</div>
 
-	<Table data={users} {params} onNext={handleNextPage} onPrev={handlePrevPage}>
-		{#snippet header()}
+	<Table
+		tableData={users}
+		paginationParams={params}
+		onNextPage={handleNextPage}
+		onPreviousPage={handlePrevPage}
+	>
+		{#snippet tableHeader()}
 			<th class="p-4">ID</th>
 			<th class="p-4">Email</th>
 			<th class="p-4">Username</th>
@@ -65,7 +70,7 @@
 			<th class="p-4">Phone</th>
 		{/snippet}
 
-		{#snippet row(user)}
+		{#snippet tableRow(user)}
 			<td class="p-4">{user.id}</td>
 			<td class="p-4">{user.email}</td>
 			<td class="p-4">{user.username}</td>

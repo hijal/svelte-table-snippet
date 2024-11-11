@@ -22,10 +22,10 @@
 	});
 
 	function handleNextPage() {
-		// TODO: handle next page
+		console.log('next page');
 	}
 	function handlePrevPage() {
-		// TODO: handle prev page
+		console.log('prev page');
 	}
 </script>
 
@@ -50,8 +50,13 @@
 		</p>
 	</div>
 
-	<Table data={products} {params} onNext={handleNextPage} onPrev={handlePrevPage}>
-		{#snippet header()}
+	<Table
+		tableData={products}
+		paginationParams={params}
+		onNextPage={handleNextPage}
+		onPreviousPage={handlePrevPage}
+	>
+		{#snippet tableHeader()}
 			<th class="p-4">ID</th>
 			<th class="p-4">Title</th>
 			<th class="p-4">Image</th>
@@ -64,7 +69,7 @@
 			<th class="p-4">Discount</th>
 		{/snippet}
 
-		{#snippet row(product)}
+		{#snippet tableRow(product)}
 			<td class="p-4">{product.id}</td>
 			<td class="p-4">{product.title}</td>
 			<td class="p-4"

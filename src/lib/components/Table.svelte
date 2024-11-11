@@ -1,111 +1,128 @@
 <script lang="ts" generics="T extends Record<string, any>">
-	import { goto } from '$app/navigation';
 	import type { Snippet } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { ArrowLeft, ArrowRight } from 'lucide-svelte';
-	import type { PaginationParams } from '../../types';
+	import type { Direction, PaginationParams, PaginationState } from '../../types';
 
 	interface Props<T> {
-		data: T[];
-		header: Snippet;
-		row: Snippet<[T]>;
-		params?: Partial<PaginationParams>;
-		onPrev: () => Promise<void> | void;
-		onNext: () => Promise<void> | void;
+		tableData: T[];
+		tableHeader: Snippet;
+		tableRow: Snippet<[T]>;
+		paginationParams?: Partial<PaginationParams>;
+		onPreviousPage: () => Promise<void> | void;
+		onNextPage: () => Promise<void> | void;
 	}
 
-	let page = $state(+params?.page || 1);
-	let isNext = $state(false);
-	let isPrev = $state(false);
+	const {
+		tableData,
+		tableHeader,
+		tableRow,
+		paginationParams,
+		onPreviousPage,
+		onNextPage
+	}: Props<T> = $props();
 
-	const { header, row, data, params, onPrev, onNext }: Props<T> = $props();
+	const paginationState = $state<PaginationState>({
+		currentPage: +paginationParams?.page || 1,
+		isNextPage: false,
+		isPreviousPage: false
+	});
 
-	async function updateUrlParams(params: Partial<PaginationParams>) {
-		const url = new URL(window.location.href);
-		const currentParams = new URLSearchParams();
+	async function updatePaginationUrl(updatedParams: Partial<PaginationParams>) {
+		const currentUrl = new URL(window.location.href);
+		const urlParams = new URLSearchParams();
 
-		if (isNext) {
-			params.ending_before = undefined;
-		}
+		const mergedParams = {
+			...updatedParams,
+			ending_before: paginationState.isNextPage ? undefined : updatedParams.ending_before,
+			starting_after: paginationState.isPreviousPage ? undefined : updatedParams.starting_after
+		};
 
-		if (isPrev) {
-			params.starting_after = undefined;
-		}
-
-		Object.entries(params).forEach(([key, value]) => {
-			if (value !== undefined) {
-				currentParams.set(key, value.toString());
+		Object.entries(mergedParams).forEach(([paramKey, paramValue]) => {
+			if (paramValue !== undefined) {
+				urlParams.set(paramKey, paramValue.toString());
 			}
 		});
 
-		url.search = currentParams.toString();
-		await goto(url.toString(), { replaceState: true });
+		currentUrl.search = urlParams.toString();
+		await goto(currentUrl.toString(), { replaceState: true });
 	}
 
-	async function handleNextPage() {
-		page += 1;
-		isNext = true;
-		isPrev = false;
-		await onNext();
+	async function handlePageNavigation(navigationDirection: Direction): Promise<void> {
+		const isNavigatingNext = navigationDirection === 'next';
+
+		paginationState.currentPage = isNavigatingNext
+			? paginationState.currentPage + 1
+			: paginationState.currentPage - 1;
+
+		paginationState.isNextPage = isNavigatingNext;
+		paginationState.isPreviousPage = !isNavigatingNext;
+
+		await (isNavigatingNext ? onNextPage() : onPreviousPage());
 	}
 
-	async function handlePrevPage() {
-		page -= 1;
-		isNext = false;
-		isPrev = true;
-		await onPrev();
+	function handleKeyboardNavigation(event: KeyboardEvent) {
+		const isFirstPage = paginationState.currentPage === 1;
+		const isLastPage = paginationState.currentPage >= 5;
+
+		if (event.key === 'ArrowRight' && !isLastPage) {
+			handlePageNavigation('next');
+		} else if (event.key === 'ArrowLeft' && !isFirstPage) {
+			handlePageNavigation('prev');
+		}
 	}
 
 	$effect(() => {
-		if (page <= 1) {
+		const isFirstPage = paginationState.currentPage <= 1;
+
+		if (isFirstPage) {
 			goto(window.location.pathname, { replaceState: true });
 		} else {
-			updateUrlParams({
-				page,
-				...params
+			updatePaginationUrl({
+				page: paginationState.currentPage,
+				...paginationParams
 			});
 		}
 	});
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'ArrowRight' && page < 5) {
-			handleNextPage();
-		} else if (e.key === 'ArrowLeft' && page > 1) {
-			handlePrevPage();
-		}
-	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeyboardNavigation} />
 
-<div class="overflow-x-auto">
+<div class="table-container overflow-x-auto">
 	<table class="table table-zebra">
 		<thead>
-			<tr class="bg-gray-200 text-gray-700">{@render header()}</tr>
+			<tr class="table-header bg-gray-200 text-gray-700">{@render tableHeader()}</tr>
 		</thead>
 
 		<tbody>
-			{#each data as item}
-				<tr class="border-b hover:bg-gray-50">{@render row(item)}</tr>
+			{#each tableData as rowData}
+				<tr class="table-row border-b hover:bg-gray-50">{@render tableRow(rowData)}</tr>
 			{/each}
 		</tbody>
 	</table>
 </div>
 
-<div class="join flex items-center justify-end">
-	<div class="flex items-center gap-2">
-		<span>Page {page}</span>
-		<div class="join flex items-center gap-2">
+<div class="pagination-controls join flex items-center justify-end">
+	<div class="pagination-info flex items-center gap-2">
+		<span>Page {paginationState.currentPage}</span>
+		<div class="pagination-buttons join flex items-center gap-2">
 			<button
 				type="button"
-				class="btn btn-sm rounded-md {page === 1 ? 'btn-disabled' : ''}"
-				onclick={() => handlePrevPage()}
+				class="pagination-button btn btn-sm rounded-md {paginationState.currentPage === 1
+					? 'btn-disabled'
+					: ''}"
+				onclick={() => handlePageNavigation('prev')}
+				aria-label="Previous page"
 			>
 				<ArrowLeft size={16} />
 			</button>
 			<button
 				type="button"
-				class="btn btn-sm rounded-md {page >= 5 ? 'btn-disabled' : ''}"
-				onclick={() => handleNextPage()}
+				class="pagination-button btn btn-sm rounded-md {paginationState.currentPage === 5
+					? 'btn-disabled'
+					: ''}"
+				onclick={() => handlePageNavigation('next')}
+				aria-label="Next page"
 			>
 				<ArrowRight size={16} />
 			</button>
